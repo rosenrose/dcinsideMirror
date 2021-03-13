@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 headers = {"User-Agent": "Mozilla/5.0 (Linux; Android 7.0; SM-G892A Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 Mobile Safari/537.36"}
 galleries = [("디제이맥스","djmaxrespect"),("사이터스","rayarkcytus"),("지브리","ghibli"),("하프라이프","halflife3"),("보이즈","voezvalkyrie"),("디모","deemo"),("동방","touhou")]
-regex = [(r"(노|놐|누|눜)([.,!?;ㄱ-ㅎ]*\s+)","냐\g<2>"),(r"(노|놐|누|눜|이기)([.,!?;ㄱ-ㅎ]*)$","냐\g<2>"),("되노","되냐"),("뭐노","뭐냐"),("무친","미친"),("무쳤","미쳤"),("노무","너무"),("운지","좆망"),("(했|햇)(노|누)","했냐")]
+replaces = [(r"(노|놐|누|눜)([.,!?;ㄱ-ㅎ]*\s+)","냐\g<2>"),(r"(노|놐|누|눜|이기)([.,!?;ㄱ-ㅎ]*)$","냐\g<2>"),("되노","되냐"),("뭐노","뭐냐"),("무친","미친"),("무쳤","미쳤"),("노무","너무"),("운지","좆망"),("(했|햇)(노|누)","했냐"),(r"돼\s*(겠|고|나|냐|네|는|니|다|던|든|어)","되\g<1>"),(r"되\s*(가|도[^록]|버|봐|서|선|야|와|요|있|주|줘|\s)","돼\g<1>")]
 
 def normalize(url):
     response = requests.get(url, headers=headers)
@@ -15,14 +15,14 @@ def normalize(url):
     content = content.replace("https://m.dcinside.com/board","")
     soup = BeautifulSoup(content, "html.parser")
     for s in soup.select("script"): s.decompose()
-    textNodes = [i for i in soup.find_all(string=True) if i.strip() and (i.parent.name not in ['style', 'script', 'head', 'title', 'meta', '[document]'])]
+    textNodes = [i for i in soup.find_all(string=True) if i.strip() and (i.parent.name not in ['style','script','head','title','meta','[document]'])]
     for text in textNodes:
-        for reg in regex:
-            compiled = re.compile(reg[0])
+        for regex in replaces:
+            compiled = re.compile(regex[0])
             if result := compiled.search(text):
-                # print(result[0]," || ",compiled.sub(reg[1],text))
+                # print(result[0]," || ",compiled.sub(regex[1],text))
                 try:
-                    text.replace_with(compiled.sub(reg[1],text))
+                    text.replace_with(compiled.sub(regex[1],text))
                 except Exception as e:
                     pass
     return soup
@@ -37,6 +37,9 @@ def gall(id):
     soup = normalize(f"https://m.dcinside.com/board/{id}?{params}")
     try:
         soup.select("ul.tab-lst")[1].select_one("li:nth-child(2) > a")["href"] = f"/{id}?recommend=1"
+        regex = re.compile(r"\((.*)\)")
+        for mal in soup.select("ul.mal-lst a"):
+            mal["href"] = f"/{id}?headid={regex.search(mal['href'])[1]}"
     except Exception as e:
         pass
     return str(soup)
