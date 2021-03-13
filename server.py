@@ -51,6 +51,7 @@ def doc(id, no):
     title = soup.select_one("div.gallview-tit-box > span.tit")
     title.name = "a"
     title["href"] = f"https://m.dcinside.com/board/{id}/{no}?{params}"
+    title["target"] = "_blank"
     # a = soup.new_tag("a", href=f"https://m.dcinside.com/board/{id}/{no}?{params}")
     # a.string = f"{id}/{no}"
     # title.append(a)
