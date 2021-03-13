@@ -21,7 +21,10 @@ def normalize(url):
             compiled = re.compile(reg[0])
             if result := compiled.search(text):
                 # print(result[0]," || ",compiled.sub(reg[1],text))
-                text.replace_with(compiled.sub(reg[1],text))
+                try:
+                    text.replace_with(compiled.sub(reg[1],text))
+                except Exception as e:
+                    pass
     return soup
 
 @app.route('/')
@@ -32,7 +35,10 @@ def index():
 def gall(id):
     params = "&".join([f"{i[0]}={i[1]}" for i in request.args.items()])
     soup = normalize(f"https://m.dcinside.com/board/{id}?{params}")
-    soup.select("ul.tab-lst")[1].select_one("li:nth-child(2) > a")["href"] = f"/{id}?recommend=1"
+    try:
+        soup.select("ul.tab-lst")[1].select_one("li:nth-child(2) > a")["href"] = f"/{id}?recommend=1"
+    except Exception as e:
+        pass
     return str(soup)
 
 @app.route('/<id>/<no>')
