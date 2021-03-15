@@ -40,6 +40,9 @@ def gall(id):
         regex = re.compile(r"\((.*)\)")
         for mal in soup.select("ul.mal-lst a"):
             mal["href"] = f"/{id}?headid={regex.search(mal['href'])[1]}"
+        title = soup.select_one("a.gall-tit-lnkempty")
+        title["href"] = f"https://m.dcinside.com/board/{id}?{params}"
+        title["target"] = "_blank"
     except Exception as e:
         pass
     return str(soup)
@@ -51,10 +54,13 @@ def doc(id, no):
     for img in soup.select("div.gall-thum-btm-inner img"):
         if img.has_attr("data-original"):
             img["src"] = img["data-original"]
-    title = soup.select_one("div.gallview-tit-box > span.tit")
-    title.name = "a"
-    title["href"] = f"https://m.dcinside.com/board/{id}/{no}?{params}"
-    title["target"] = "_blank"
+    try:
+        title = soup.select_one("div.gallview-tit-box > span.tit")
+        title.name = "a"
+        title["href"] = f"https://m.dcinside.com/board/{id}/{no}?{params}"
+        title["target"] = "_blank"
+    except Exception as e:
+        pass
     # a = soup.new_tag("a", href=f"https://m.dcinside.com/board/{id}/{no}?{params}")
     # a.string = f"{id}/{no}"
     # title.append(a)
